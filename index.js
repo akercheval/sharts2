@@ -3,7 +3,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var port = process.env.PORT || 3000;
 
-var users = [];
+var users = {};
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/login.html');
@@ -17,7 +17,7 @@ io.on('connection', function(socket){
   if (io.engine.clientsCount == 1) {
     io.emit('chat message', "You're the first one here, lucky you!");
   } else {
-    io.emit('chat message', "Hello! " + users.slice(0, -1).join(" and ") + " are already here!");
+    io.emit('chat message', "Hello! " + Object.keys(users).slice(0, -1).join(" and ") + " are already here!");
   }
   
   socket.on('chat message', function(msg){
@@ -37,8 +37,17 @@ io.on('connection', function(socket){
   
   socket.on('name', function(name) {
     io.emit('chat message', name + " just logged on!");
-    users.push(name);
+    users[name] = socket;
     io.emit('chat message', "There are now " + io.engine.clientsCount + " people online.");
+    if (io.engine.clientsCount == 4) {
+      io.emit('chat message', "Let's play some sharts, baby!");
+      // private messages proof of concept - to be used to deal cards
+      // TODO doesn't quite work yet lol: https://stackoverflow.com/questions/11356001/socket-io-private-message
+      users["Adam"].emit('chat message', "Hi Adam!");
+      users["Avery"].emit('chat message', "Hi Avery!");
+      users["Phil"].emit('chat message', "Hi Phil!");
+      users["Will"].emit('chat message', "Hi Will!");
+    }
   });
 });
 
