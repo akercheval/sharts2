@@ -1,13 +1,10 @@
-# chat-example
+# sharts, round two
+### this time with node! :/
 
-This is the source code for a very simple chat example used for
-the [Getting Started](http://socket.io/get-started/chat/) guide
-of the Socket.IO website.
+An online hearts/card game server, brought to you by [socket.io](http://socket.io).
 
-Please refer to it to learn how to run this application.
+The foundation for this code, helping me solve the problem of telling how many people are online at any given moment, can be found [here](https://github.com/socketio/chat-example).
 
-You can also spin up a free Heroku dyno to test it out:
-
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/socketio/chat-example)
-
-Besides, the application is deployed on [Now](https://zeit.co/now): https://socketio-chat-example.now.sh/
+#### To run:
+You'll need `express` and `socket.io`, and obviously node (again, :/ ).
+Then, a quick `node index.js` should get this running on `localhost:3000`.
