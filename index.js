@@ -15,10 +15,14 @@ app.get('/home', function(req, res){
 
 io.on('connection', function(socket){
   if (io.engine.clientsCount == 1) {
-    io.emit('chat message', "You're the first one here, lucky you!");
+    socket.emit('chat message', "You're the first one here, lucky you!");
   } else {
-    io.emit('chat message', "Hello! " + Object.keys(users).slice(0, -1).join(" and ") + " are already here!");
+    socket.emit('chat message', "Hello! " + Object.keys(users).slice(0, -1).join(" and ") + " are already here!");
   }
+
+  socket.emit('chat message', 'I am socket number: ' + io.engine.clientsCount);
+    
+  users["TEMP"] = socket;
   
   socket.on('chat message', function(msg){
     io.emit('chat message', msg);
@@ -37,10 +41,12 @@ io.on('connection', function(socket){
   
   socket.on('name', function(name) {
     io.emit('chat message', name + " just logged on!");
-    users[name] = socket;
+    users[name] = users["TEMP"];
     io.emit('chat message', "There are now " + io.engine.clientsCount + " people online.");
+    socket.emit('chat message', 'I am socket ' + name);
     if (io.engine.clientsCount == 4) {
       io.emit('chat message', "Let's play some sharts, baby!");
+      socket.emit('chat message', socket);
       // private messages proof of concept - to be used to deal cards
       // TODO doesn't quite work yet lol: https://stackoverflow.com/questions/11356001/socket-io-private-message
       users["Adam"].emit('chat message', "Hi Adam!");
