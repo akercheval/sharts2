@@ -3,7 +3,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var port = process.env.PORT || 3000;
 
-var users = {};
+var users = [];
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/login.html');
@@ -14,19 +14,31 @@ app.get('/home', function(req, res){
 });
 
 io.on('connection', function(socket){
+  // print welcome message to user
   if (io.engine.clientsCount == 1) {
     socket.emit('chat message', "You're the first one here, lucky you!");
+  } else if (io.engine.clientsCount == 2) {
+    socket.emit('chat message', "Hello! " + users.slice(0, -1) + " is already here!");
   } else {
-    socket.emit('chat message', "Hello! " + Object.keys(users).slice(0, -1).join(" and ") + " are already here!");
+    socket.emit('chat message', "Hello! " + users.slice(0, -1).join(" and ") + " are already here!");
   }
 
-  socket.emit('chat message', 'I am socket number: ' + io.engine.clientsCount);
+  // add user to AllPlayers room as well as their own individual room 
+  socket.join("AllPlayers");
+  socket.join("Player " + io.engine.clientsCount.toString());
     
-  users["TEMP"] = socket;
-  
   socket.on('chat message', function(msg){
     io.emit('chat message', msg);
   });
+
+  // Message to everybody and individual messages to players
+  if (io.engine.clientsCount == 4) {
+    io.in('AllPlayers').emit('chat message', "Let's play some sharts!");
+    io.to("Player 1").emit('chat message', "Hi Player 1");
+    io.to("Player 2").emit('chat message', "Hi Player 2");
+    io.to("Player 3").emit('chat message', "Hi Player 3");
+    io.to("Player 4").emit('chat message', "Hi Player 4");
+  }
 
   // This fires at weird times. Try uncommenting it and look at the console when you use the page.
   // Also, every time it fires it reduces io.engine.clientsCount by one (I think?) which screws up
@@ -40,20 +52,8 @@ io.on('connection', function(socket){
   */
   
   socket.on('name', function(name) {
-    io.emit('chat message', name + " just logged on!");
-    users[name] = users["TEMP"];
-    io.emit('chat message', "There are now " + io.engine.clientsCount + " people online.");
-    socket.emit('chat message', 'I am socket ' + name);
-    if (io.engine.clientsCount == 4) {
-      io.emit('chat message', "Let's play some sharts, baby!");
-      socket.emit('chat message', socket);
-      // private messages proof of concept - to be used to deal cards
-      // TODO doesn't quite work yet lol: https://stackoverflow.com/questions/11356001/socket-io-private-message
-      users["Adam"].emit('chat message', "Hi Adam!");
-      users["Avery"].emit('chat message', "Hi Avery!");
-      users["Phil"].emit('chat message', "Hi Phil!");
-      users["Will"].emit('chat message', "Hi Will!");
-    }
+    io.in('AllPlayers').emit('chat message', name + " just logged on!");
+    users.push(name);
   });
 });
 
