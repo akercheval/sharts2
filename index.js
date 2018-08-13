@@ -34,7 +34,7 @@ io.on('connection', function(socket){
   });
 
   // Message to everybody and individual messages to players
-  if (io.engine.clientsCount == 4) {
+  if ((io.engine.clientsCount == 4) && (users.length == 4)) {
     hands = deal();
     io.in('AllPlayers').emit('chat message', "Let's play some sharts!");
     io.to("Player 1").emit('chat message', hands['1']);
