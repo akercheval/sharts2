@@ -61,3 +61,39 @@ io.on('connection', function(socket){
 http.listen(port, function(){
   console.log('listening on *:' + port);
 });
+
+
+// game logic, card shuffling, etc below
+CARD_ORDER = {
+    '2'     : 0,
+    '3'     : 1,
+    '4'     : 2,
+    '5'     : 3,
+    '6'     : 4,
+    '7'     : 5,
+    '8'     : 6,
+    '9'     : 7,
+    '10'    : 8,
+    'Jack'  : 9,
+    'Queen' : 10,
+    'King'  : 11,
+    'Ace'   : 12
+};
+
+function deal() {
+  suits = ["Hearts", "Clubs", "Diamonds", "Spades"];
+  faces = ["Jack", "Queen", "King", "Ace"];
+  cards = [];
+  for (i = 0; i < 4; i++) {
+    for (j = 2; j < 11; j++) {
+      newCard = [j.toString(), suits[i]];
+      cards.push(newCard);
+    }
+    for (k = 0; k < 4; k++) {
+      newCard = [faces[k], suits[i]];
+      cards.push(newCard);
+    }
+  }
+};
+
+deal();
