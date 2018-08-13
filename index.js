@@ -15,7 +15,6 @@ app.get('/home', function(req, res){
 });
 
 io.on('connection', function(socket){
-  numUsers++;
   // print welcome message to user
   if (io.engine.clientsCount == 1) {
     socket.emit('chat message', "You're the first one here, lucky you!");
@@ -24,6 +23,7 @@ io.on('connection', function(socket){
   } else {
     socket.emit('chat message', "Hello! " + users.slice(0, -1).join(" and ") + " are already here!");
   }
+  console.log(io.engine.clientsCount);
 
   // add user to AllPlayers room as well as their own individual room 
   socket.join("AllPlayers");
@@ -34,7 +34,7 @@ io.on('connection', function(socket){
   });
 
   // Message to everybody and individual messages to players
-  if (numUsers == 4) {
+  if (io.engine.clientsCount == 4) {
     hands = deal();
     io.in('AllPlayers').emit('chat message', "Let's play some sharts!");
     io.to("Player 1").emit('chat message', hands['1']);
