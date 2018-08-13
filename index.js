@@ -4,6 +4,7 @@ var io = require('socket.io')(http);
 var port = process.env.PORT || 3000;
 
 var users = [];
+numUsers = 0;
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/login.html');
@@ -14,6 +15,7 @@ app.get('/home', function(req, res){
 });
 
 io.on('connection', function(socket){
+  numUsers++;
   // print welcome message to user
   if (io.engine.clientsCount == 1) {
     socket.emit('chat message', "You're the first one here, lucky you!");
@@ -32,12 +34,13 @@ io.on('connection', function(socket){
   });
 
   // Message to everybody and individual messages to players
-  if (io.engine.clientsCount == 4) {
+  if (numUsers == 4) {
+    hands = deal();
     io.in('AllPlayers').emit('chat message', "Let's play some sharts!");
-    io.to("Player 1").emit('chat message', "Hi Player 1");
-    io.to("Player 2").emit('chat message', "Hi Player 2");
-    io.to("Player 3").emit('chat message', "Hi Player 3");
-    io.to("Player 4").emit('chat message', "Hi Player 4");
+    io.to("Player 1").emit('chat message', hands['1']);
+    io.to("Player 2").emit('chat message', hands['2']);
+    io.to("Player 3").emit('chat message', hands['3']);
+    io.to("Player 4").emit('chat message', hands['4']);
   }
 
   // This fires at weird times. Try uncommenting it and look at the console when you use the page.
@@ -80,6 +83,10 @@ CARD_ORDER = {
     'Ace'   : 12
 };
 
+function Comparator(a, b) {
+  return CARD_ORDER[a[0]] > CARD_ORDER[b[0]] ? 1 : -1;
+}
+
 function deal() {
   suits = ["Hearts", "Clubs", "Diamonds", "Spades"];
   faces = ["Jack", "Queen", "King", "Ace"];
@@ -94,6 +101,46 @@ function deal() {
       cards.push(newCard);
     }
   }
+  shuffleArray(cards);
+  
+  hands = {'1' : [], '2' : [], '3' : [], '4' : []};
+
+  while (cards.length != 0) {
+    hands['1'].push(cards.pop());
+    hands['2'].push(cards.pop());
+    hands['3'].push(cards.pop());
+    hands['4'].push(cards.pop());
+  }  
+
+  for (i = 1; i < 5; i++) {
+    hearts = [];
+    clubs = [];
+    diamonds = [];
+    spades = [];
+    for (j = 0; j < hands[i.toString()].length; j++) {
+      currentCard = hands[i.toString()][j];
+      if (currentCard[1] == "Hearts") hearts.push(currentCard);
+      if (currentCard[1] == "Clubs") clubs.push(currentCard);
+      if (currentCard[1] == "Diamonds") diamonds.push(currentCard);
+      if (currentCard[1] == "Spades") spades.push(currentCard);
+    }
+    hearts.sort(Comparator);
+    clubs.sort(Comparator);
+    diamonds.sort(Comparator);
+    spades.sort(Comparator);
+    hands[i.toString()] = hearts.concat(clubs.concat(diamonds.concat(spades)));
+  }
+  return hands;
 };
 
-deal();
+// i can't believe there's no built-in shuffle function in javascript?
+// then again, i can
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
+
